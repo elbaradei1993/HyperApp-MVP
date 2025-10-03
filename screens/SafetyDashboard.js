@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native';
-import MapView, { Heatmap } from 'react-native-maps';
-import * as Location from 'expo-location';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, FlatList, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+// Conditionally import map components
+let MapView, Heatmap;
+if (Platform.OS !== 'web') {
+  const Maps = require('react-native-maps');
+  MapView = Maps.default;
+  Heatmap = Maps.Heatmap;
+}
+import * as Location from 'expo-location';
 
 const SafetyDashboard = () => {
   const [location, setLocation] = useState(null);
@@ -42,17 +49,24 @@ const SafetyDashboard = () => {
 
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: location?.latitude || 37.78825,
-          longitude: location?.longitude || -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        <Heatmap points={heatmapPoints} />
-      </MapView>
+      {Platform.OS === 'web' ? (
+        <View style={[styles.map, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }]}>
+          <Text style={{ fontSize: 18, color: '#666' }}>Map View - Web Preview</Text>
+          <Text style={{ fontSize: 14, color: '#999', marginTop: 10 }}>Interactive map available on mobile</Text>
+        </View>
+      ) : (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: location?.latitude || 37.78825,
+            longitude: location?.longitude || -122.4324,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        >
+          <Heatmap points={heatmapPoints} />
+        </MapView>
+      )}
 
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.sosButton} onPress={handleSOS}>
